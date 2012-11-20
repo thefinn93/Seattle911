@@ -65,8 +65,8 @@ class SubredditAnnouncer(callbacks.Plugin):
     def post(self, irc, channel, msg):
         try:
             irc.queueMsg(ircmsgs.privmsg(channel, unicode(msg)))
-        except Exception as inst:
-            continue
+        except:
+            print "Failed to send to channel"
     
     def checkReddit(self, irc):
         try:
@@ -116,7 +116,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         try:
             schedule.addPeriodicEvent(checkForPosts, self.registryValue('checkinterval')*60, 'redditCheck', False)
         except AssertionError:
-            irc.reply(' The reddit checker was already running!'))
+            irc.reply('The reddit checker was already running!')
         else:
             irc.reply('Reddit checker started!')
     start = wrap(start)
