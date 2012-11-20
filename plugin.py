@@ -66,7 +66,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         try:
             irc.queueMsg(ircmsgs.privmsg(channel, unicode(msg)))
         except:
-            print "Failed to send to channel"
+            self.log.warning("Failed to send to channel")
     
     def checkReddit(self, irc):
         try:
@@ -88,6 +88,7 @@ class SubredditAnnouncer(callbacks.Plugin):
                         if post['data']['subreddit'] in data['subreddits']:
                             self.post(irc, channel, "[NEW] [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink)
                         else:
+                            self.log.debug("Not posting " + shortlink + " because it's our first time looking at /r/" + post['data']['subreddit'])
                             if not post['data']['subreddit'] in addtoindex:
                                 addtoindex.append(post['data']['subreddit'])
                         data['announced'].append(post['data']['id'])
@@ -103,6 +104,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         """takes no args
         
         Checks the specified subreddit and announces new posts"""
+        irc.reply("Checking!")
         self.checkReddit(irc)
     check = wrap(check)
     
