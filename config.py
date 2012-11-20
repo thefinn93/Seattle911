@@ -47,6 +47,10 @@ conf.registerGlobalValue(SubredditAnnouncer, 'checkinterval',
 conf.registerGlobalValue(SubredditAnnouncer, 'domain',
     registry.String("http://www.reddit.com", """The domain to check. Probably http://www.reddit.com
     unless you've got a different reddit install"""))
+    
+conf.registerGlobalValue(SubredditAnnouncer, 'redditname',
+    registry.String("Reddit", """The name of the reddit install. Not really a big deal. Leave blank
+    to not have the [reddit] part of the announce message"""))
 
 conf.registerGlobalValue(SubredditAnnouncer, 'shortdomain',
     registry.String("http://redd.it", """The short domain to use. Probably http://redd.it unless you've

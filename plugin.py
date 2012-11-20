@@ -85,8 +85,12 @@ class SubredditAnnouncer(callbacks.Plugin):
                         if self.registryValue('shortdomain') != None:
                             shortlink = chr(037) + self.registryValue('shortdomain') + "/" + post['data']['id'] + chr(037)
                         
+                        redditname = ""
+                        if self.registryValue('redditname') is not "":
+                            redditname = " [" + self.registryValue('redditname') + "]"
+                        
                         if post['data']['subreddit'] in data['subreddits']:
-                            self.post(irc, channel, "[NEW] [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink)
+                            self.post(irc, channel, "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink)
                         else:
                             self.log.debug("Not posting " + shortlink + " because it's our first time looking at /r/" + post['data']['subreddit'])
                             if not post['data']['subreddit'] in addtoindex:
