@@ -91,9 +91,8 @@ class SubredditAnnouncer(callbacks.Plugin):
                             if not post['data']['subreddit'] in addtoindex:
                                 addtoindex.append(post['data']['subreddit'])
                         data['announced'].append(post['data']['id'])
-                    except:
-                        continue
-
+            except:
+                continue
             if not sub in data['subreddits']:
                 data['subreddits'].extend(addtoindex)
         savefile = open(self.savefile, "w")
