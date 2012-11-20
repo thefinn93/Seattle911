@@ -53,6 +53,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         self.__parent = super(SubredditAnnouncer, self)
         self.__parent.__init__(irc)
         self.savefile = conf.supybot.directories.data.dirize("subredditAnnouncer.db")
+        self.headers = {"User-Agent":"SubredditAnnouncer (thefinn93@thefinn93.com)"}
                 
         def checkForPosts():
             self.checkReddit(irc)
@@ -78,7 +79,7 @@ class SubredditAnnouncer(callbacks.Plugin):
                 addtoindex = []
                 channel = channelsubreddit.split(":")[0]
                 sub = channelsubreddit.split(":")[1]
-                listing = json.loads(requests.get(self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new").content)
+                listing = json.loads(requests.get(self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new", headers=self.headers).content)
                 for post in listing['data']['children']:
                     if not post['data']['id'] in data['announced']:
                         shortlink = chr(037) + self.registryValue('domain') + "/" + post['data']['id'] + chr(037)
