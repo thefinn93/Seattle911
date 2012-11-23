@@ -39,6 +39,7 @@ from supybot.i18n import PluginInternationalization, internationalizeDocstring
 import supybot.schedule as schedule
 import supybot.conf as conf
 import requests
+import ConfigParser
 import json
 
 _ = PluginInternationalization('SubredditAnnouncer')
@@ -74,11 +75,13 @@ class SubredditAnnouncer(callbacks.Plugin):
             data = json.load(open(self.savefile))
         except Exception as inst:
             data = {"announced":[],"subreddits":[]}
-        for channelsubreddit in self.registryValue('subreddits'):
+            
+        parser = ConfigParser.SafeConfigParser()
+        parser.read([self.registryValue('configfile')])
+        for channel in parser.sections():
             try:
                 addtoindex = []
-                channel = channelsubreddit.split(":")[0]
-                sub = channelsubreddit.split(":")[1]
+                sub = parser.get(channel, 'subreddits')
                 listing = json.loads(requests.get(self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new", headers=self.headers).content)
                 for post in listing['data']['children']:
                     if not post['data']['id'] in data['announced']:

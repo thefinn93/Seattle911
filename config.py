@@ -56,6 +56,9 @@ conf.registerGlobalValue(SubredditAnnouncer, 'shortdomain',
     registry.String("http://redd.it", """The short domain to use. Probably http://redd.it unless you've
     got your own reddit install. If you don't have a short domain just set it to your long domain"""))
     
-conf.registerGlobalValue(SubredditAnnouncer, 'subreddits',
-    registry.SpaceSeparatedListOfStrings('', """A list of subreddits to announce in each channel.
-    Format is #channel:subreddit+subreddit+subreddit #channel2:subreddit+subreddit"""))
+#conf.registerGlobalValue(SubredditAnnouncer, 'subreddits',
+#    registry.SpaceSeparatedListOfStrings('', """A list of subreddits to announce in each channel.
+#    Format is #channel:subreddit+subreddit+subreddit #channel2:subreddit+subreddit"""))
+conf.registerGlobalValue(SubredditAnnouncer, 'configfile',
+    registry.String(conf.supybot.directories.data.dirize("subredditAnnouncer.ini"), """The configuration
+    file used for setting up the subreddit/channels"""))
