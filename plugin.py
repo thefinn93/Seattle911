@@ -84,9 +84,7 @@ class SubredditAnnouncer(callbacks.Plugin):
                 sub = parser.get(channel, 'subreddits')
                 self.log.info("Checking /r/" + sub + " for " + channel)
                 url = self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new"
-                self.log.info("Loading " + url)
                 request = requests.get(url, headers=self.headers)
-                self.log.info("Result: " + str(request.status_code))
                 listing = json.loads(request.content)
                 for post in listing['data']['children']:
                     if not post['data']['id'] in data['announced']:
