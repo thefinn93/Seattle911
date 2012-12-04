@@ -76,7 +76,10 @@ class SubredditAnnouncer(callbacks.Plugin):
         try:
             data = json.load(open(self.savefile))
         except Exception as inst:
-            data = {"announced":[],"subreddits":[]}
+            domain = "http://www.reddit.com"
+            if self.registryValue('domain') is not "":
+                doman = self.registryValue('domain')
+            data = {domain: {"announced":[],"subreddits":[]}}
             
         parser = ConfigParser.SafeConfigParser()
         parser.read([self.registryValue('configfile')])
@@ -87,23 +90,33 @@ class SubredditAnnouncer(callbacks.Plugin):
                 domain = self.registryValue('domain')
                 if parser.has_option(channel, 'domain'):
                     domain = parser.get(channel, 'domain')
-                self.log.info("Checking /r/" + sub + " for " + channel)
+                if not domain in data:
+                    data[domain] = {"announced":[],"subreddits":[]}
+                self.log.info("Creating data store for " + domain)
                 url = domain + "/r/" + sub + "/new.json?sort=new"
+                self.log.info("Checking " + url + " for " + channel)
                 request = requests.get(url, headers=self.headers)
                 listing = json.loads(request.content)
                 for post in listing['data']['children']:
-                    if not post['data']['id'] in data['announced']:
+                    if not post['data']['id'] in data[domain]['announced']:
                         shortlink = chr(037) + self.registryValue('domain') + "/" + post['data']['id'] + chr(037)
+                        
                         if self.registryValue('shortdomain') != None:
                             shortlink = chr(037) + self.registryValue('shortdomain') + "/" + post['data']['id'] + chr(037)
+                            
+                        if parser.has_option(channel, 'shortdomain'):
+                            shortlink = chr(037) + parser.get(channel, 'shortdomain') + "/" + post['data']['id'] + chr(037)
                         
                         redditname = ""
                         if self.registryValue('redditname') is not "":
                             redditname = " [" + self.registryValue('redditname') + "]"
-                        if parser.has_option(channel, 'redditname'):
-                            reditname = " [" + parser.get(channel, 'redditname') + "] "
+                            self.log.info("Setting redditname to " + redditname + " because it's in the config")
                             
-                        if post['data']['subreddit'] in data['subreddits']:
+                        if parser.has_option(channel, 'redditname'):
+                            redditname = " [" + parser.get(channel, 'redditname') + "] "
+                            self.log.info("It appears that this channels uses a different reddit. Setting redditname to " + redditname)
+                            
+                        if post['data']['subreddit'] in data[domain]['subreddits']:
                             msg = "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink
                             self.log.info(msg)
                             self.post(irc, channel, msg)
@@ -111,11 +124,14 @@ class SubredditAnnouncer(callbacks.Plugin):
                             self.log.info("Not posting " + self.registryValue('shortdomain') + "/" + post['data']['id'] + " because it's our first time looking at /r/" + post['data']['subreddit'])
                             if not post['data']['subreddit'] in addtoindex:
                                 addtoindex.append(post['data']['subreddit'])
-                        data['announced'].append(post['data']['id'])
+                        data[domain]['announced'].append(post['data']['id'])
             except Exception as e:
                 self.log.warning("Whoops! Something fucked up: " + str(e))
-            if not sub in data['subreddits']:
-                data['subreddits'].extend(addtoindex)
+            if not domain in data:
+                data[domain] = {"announced":[],"subreddits":[]}
+                self.log.info("Creating data store for " + domain)
+            if not sub in data[domain]['subreddits']:
+                data[domain]['subreddits'].extend(addtoindex)
         savefile = open(self.savefile, "w")
         savefile.write(json.dumps(data))
         savefile.close()
