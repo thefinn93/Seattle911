@@ -68,7 +68,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         try:
             irc.queueMsg(ircmsgs.privmsg(channel, unicode(msg)))
         except:
-            self.log.warning("Failed to send to channel")
+            self.log.warning("Failed to send to " + channel)
     
     def checkReddit(self, irc):
         try:
@@ -82,7 +82,12 @@ class SubredditAnnouncer(callbacks.Plugin):
             try:
                 addtoindex = []
                 sub = parser.get(channel, 'subreddits')
-                listing = json.loads(requests.get(self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new", headers=self.headers).content)
+                self.log.info("Checking /r/" + sub + " for " + channel)
+                url = self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new"
+                self.log.info("Loading " + url)
+                request = requests.get(url, headers=self.headers)
+                self.log.info("Result: " + str(request.status_code))
+                listing = json.loads(request.content)
                 for post in listing['data']['children']:
                     if not post['data']['id'] in data['announced']:
                         shortlink = chr(037) + self.registryValue('domain') + "/" + post['data']['id'] + chr(037)
@@ -96,12 +101,12 @@ class SubredditAnnouncer(callbacks.Plugin):
                         if post['data']['subreddit'] in data['subreddits']:
                             self.post(irc, channel, "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink)
                         else:
-                            self.log.debug("Not posting " + shortlink + " because it's our first time looking at /r/" + post['data']['subreddit'])
+                            self.log.info("Not posting " + self.registryValue('shortdomain') + "/" + post['data']['id'] + " because it's our first time looking at /r/" + post['data']['subreddit'])
                             if not post['data']['subreddit'] in addtoindex:
                                 addtoindex.append(post['data']['subreddit'])
                         data['announced'].append(post['data']['id'])
-            except:
-                continue
+            except Exception as e:
+                self.log.warning("Whoops! Something fucked up: " + str(e))
             if not sub in data['subreddits']:
                 data['subreddits'].extend(addtoindex)
         savefile = open(self.savefile, "w")
