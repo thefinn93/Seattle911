@@ -66,7 +66,7 @@ class SubredditAnnouncer(callbacks.Plugin):
     
     def post(self, irc, channel, msg):
         try:
-            irc.queueMsg(ircmsgs.privmsg(channel, unicode(msg)))
+            irc.queueMsg(ircmsgs.privmsg(channel, str(msg)))
         except Exception as e:
             self.log.warning("Failed to send to " + channel + ": " + str(type(e)))
             self.log.warning(str(e.args))
@@ -84,8 +84,11 @@ class SubredditAnnouncer(callbacks.Plugin):
             try:
                 addtoindex = []
                 sub = parser.get(channel, 'subreddits')
+                domain = self.registryValue('domain')
+                if parser.has_option(channel, 'domain'):
+                    domain = parser.get(channel, 'domain')
                 self.log.info("Checking /r/" + sub + " for " + channel)
-                url = self.registryValue('domain') + "/r/" + sub + "/new.json?sort=new"
+                url = domain + "/r/" + sub + "/new.json?sort=new"
                 request = requests.get(url, headers=self.headers)
                 listing = json.loads(request.content)
                 for post in listing['data']['children']:
@@ -97,9 +100,13 @@ class SubredditAnnouncer(callbacks.Plugin):
                         redditname = ""
                         if self.registryValue('redditname') is not "":
                             redditname = " [" + self.registryValue('redditname') + "]"
-                        
+                        if parser.has_option(channel, 'redditname'):
+                            reditname = " [" + parser.get(channel, 'redditname') + "] "
+                            
                         if post['data']['subreddit'] in data['subreddits']:
-                            self.post(irc, channel, "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink)
+                            msg = "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink
+                            self.log.info(msg)
+                            self.post(irc, channel, msg)
                         else:
                             self.log.info("Not posting " + self.registryValue('shortdomain') + "/" + post['data']['id'] + " because it's our first time looking at /r/" + post['data']['subreddit'])
                             if not post['data']['subreddit'] in addtoindex:
