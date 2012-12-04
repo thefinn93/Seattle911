@@ -68,7 +68,7 @@ class SubredditAnnouncer(callbacks.Plugin):
         try:
             irc.queueMsg(ircmsgs.privmsg(channel, unicode(msg)))
         except Exception as e:
-            self.log.warning("Failed to send to " + channgel + ": " + str(e))
+            self.log.warning("Failed to send to " + channel + ": " + str(e))
     
     def checkReddit(self, irc):
         try:
