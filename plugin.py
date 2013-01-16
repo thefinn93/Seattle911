@@ -34,6 +34,7 @@ import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 import supybot.ircmsgs as ircmsgs
+import supybot.ircdb as ircdb
 from supybot.i18n import PluginInternationalization, internationalizeDocstring
 
 import supybot.schedule as schedule
@@ -138,10 +139,13 @@ class SubredditAnnouncer(callbacks.Plugin):
     
     def check(self, irc, msg, args):
         """takes no args
-        
+                
         Checks the specified subreddit and announces new posts"""
-        irc.reply("Checking!")
-        self.checkReddit(irc)
+        if ircdb.checkCapability(msg.prefix, "owner"):
+            irc.reply("Checking!")
+            self.checkReddit(irc)
+        else:
+            irc.reply("Fuck off you unauthorized piece of shit")
     check = wrap(check)
     
     def start(self, irc, msg, args):
@@ -149,26 +153,32 @@ class SubredditAnnouncer(callbacks.Plugin):
 
         A command to start the node checker."""
         # don't forget to redefine the event wrapper
-        def checkForPosts():
-            self.checkReddit(irc)
-        try:
-            schedule.addPeriodicEvent(checkForPosts, self.registryValue('checkinterval')*60, 'redditCheck', False)
-        except AssertionError:
-            irc.reply('The reddit checker was already running!')
+        if ircdb.checkCapability(msg.prefix, "owner"):
+            def checkForPosts():
+                self.checkReddit(irc)
+            try:
+                schedule.addPeriodicEvent(checkForPosts, self.registryValue('checkinterval')*60, 'redditCheck', False)
+            except AssertionError:
+                irc.reply('The reddit checker was already running!')
+            else:
+                irc.reply('Reddit checker started!')
         else:
-            irc.reply('Reddit checker started!')
+            irc.reply("Fuck off you unauthorized piece of shit")
     start = wrap(start)
     
     def stop(self, irc, msg, args):
         """takes no arguments
 
         A command to stop the node checker."""
-        try:
-            schedule.removeEvent('redditCheck')
-        except KeyError:
-            irc.reply('Error: the reddit checker wasn\'t running!')
+        if ircdb.checkCapability(msg.prefix, "owner"):
+            try:
+                schedule.removeEvent('redditCheck')
+            except KeyError:
+                irc.reply('Error: the reddit checker wasn\'t running!')
+            else:
+                irc.reply('Reddit checker stopped.')
         else:
-            irc.reply('Reddit checker stopped.')
+            irc.reply("Fuck off you unauthorized piece of shit")
     stop = wrap(stop)
 
 Class = SubredditAnnouncer
