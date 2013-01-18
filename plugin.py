@@ -93,7 +93,7 @@ class SubredditAnnouncer(callbacks.Plugin):
                     domain = parser.get(channel, 'domain')
                 if not domain in data:
                     data[domain] = {"announced":[],"subreddits":[]}
-                self.log.info("Creating data store for " + domain)
+                    self.log.info("Creating data store for " + domain)
                 url = domain + "/r/" + sub + "/new.json?sort=new"
                 self.log.info("Checking " + url + " for " + channel)
                 request = requests.get(url, headers=self.headers)
@@ -118,8 +118,8 @@ class SubredditAnnouncer(callbacks.Plugin):
                             self.log.info("It appears that this channels uses a different reddit. Setting redditname to " + redditname)
                             
                         if post['data']['subreddit'] in data[domain]['subreddits']:
-                            msg = "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " [" + chr(003) + "03" + str(post['data']['score']) + chr(017) + "] (" + chr(003) + "02" + str(post['data']['ups']) + chr(017) + "|" + chr(003) + "04" + str(post['data']['downs']) + chr(017) + ")  " + shortlink
-                            self.log.info(msg)
+                            msg = "[NEW]" + redditname + " [/r/" + post['data']['subreddit'] + "] " + chr(002) + post['data']['title'] + chr(002) + " - " + shortlink
+                            #self.log.info(msg)
                             self.post(irc, channel, msg)
                         else:
                             self.log.info("Not posting " + self.registryValue('shortdomain') + "/" + post['data']['id'] + " because it's our first time looking at /r/" + post['data']['subreddit'])
