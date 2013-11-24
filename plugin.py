@@ -74,6 +74,7 @@ class Seattle911(callbacks.Plugin):
             self.log.warning(str(e))
     
     def checkForIncidents(self, irc):
+        self.log.info("Checking for shit")
         try:
             data = json.load(open(self.savefile))
         except Exception as inst:
@@ -151,13 +152,13 @@ class Seattle911(callbacks.Plugin):
         # don't forget to redefine the event wrapper
         if ircdb.checkCapability(msg.prefix, "owner"):
             def checkForPosts():
-                self.checkReddit(irc)
+                self.checkForIncidents(irc)
             try:
                 schedule.addPeriodicEvent(checkForPosts, self.registryValue('checkinterval')*60, '911check', False)
             except AssertionError:
-                irc.reply('The reddit checker was already running!')
+                irc.reply('The 911 checker was already running!')
             else:
-                irc.reply('Reddit checker started!')
+                irc.reply('911 checker started!')
         else:
             irc.reply("Fuck off you unauthorized piece of shit")
     start = wrap(start)
@@ -170,9 +171,9 @@ class Seattle911(callbacks.Plugin):
             try:
                 schedule.removeEvent('911check')
             except KeyError:
-                irc.reply('Error: the reddit checker wasn\'t running!')
+                irc.reply('Error: the 911 checker wasn\'t running!')
             else:
-                irc.reply('Reddit checker stopped.')
+                irc.reply('911 checker stopped.')
         else:
             irc.reply("Fuck off you unauthorized piece of shit")
     stop = wrap(stop)
