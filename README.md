@@ -1,46 +1,21 @@
-This plugin checks a list of subreddits for new posts and announces them in IRC as they come in.
+This plugin checks a list of Seattle area 911 calls and announces them in IRC as they come in.
 
-Install the plugin, then configure edit the config file ( `Seattle911
-.ini` in the data directory) in this format:
-
-```ini
-[#channel]
-subreddits = all
-domain = http://www.uppit.us
-shortdomain = http://uppit.us
-redditname = uppit
-
-[#netsec]
-subreddits = netsec
-format = [NEW] [{redditname}] [/r/{subreddit}] {bold}{title}{bold} - {shortlink}
-```
+Install the plugin, then enable it in a channel by setting the channel configuration varible
+`supybot.plugins.Seattle911.enable` to `on`.
 
 The "format" option dictates how the bot should announce messages to the
 channel. You can also specify a `[global]` section with a default format.
-If none is specificed, the one shown above is used. Available options are:
+Available options are:
  
-* `{redditname}` - the name of the reddit site. Usually Reddit, but clones
-exist
+* `{address}` - The address that the incident occured at.
 
-* `{subreddit}` - the name of the subreddit, not including the /r/
+* `{longitude}` - The longitude that the incident occured at.
 
-* `{title}` - the title of the post
+* `{latitude}` - The latitude that the incident occured at.
 
-* `{author}` - the user who posted it
+* `{incident_number}` - A unique identifier assigned to the incident.
 
-* `{link}` - the link that was submitted. For selfposts, this is the long form URL to the comments
-
-* `{shorturl}` - the redd.it short URL
-
-* `{score}` - the current score of the post
-
-* `{ups}` - the number of upvotes it's received
-
-* `{downs}` - the number of downvotes it's received
-
-* `{comments}` - the number of comments it's received
-
-* `{domain}` - the domain of the URL of the post (self.subreddit for selfposts)
+* `{incident_type}` - the type of incident. For example, "Aid Response", "Medic Response", "Auto Fire Alarm"
 
 * `{bold}` - the code to start or stop bold formatting
 
