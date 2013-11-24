@@ -33,32 +33,16 @@ import supybot.registry as registry
 from supybot.i18n import PluginInternationalization, internationalizeDocstring
 import os
 
-_ = PluginInternationalization('SubredditAnnouncer')
+_ = PluginInternationalization('Seattle911')
 
 def configure(advanced):
     from supybot.questions import expect, anything, something, yn
-    conf.registerPlugin('SubredditAnnouncer')
+    conf.registerPlugin('Seattle911')
 
-SubredditAnnouncer = conf.registerPlugin('SubredditAnnouncer')
+Seattle911 = conf.registerPlugin('Seattle911')
 
-conf.registerGlobalValue(SubredditAnnouncer, 'checkinterval',
-    registry.NonNegativeInteger(5, """How often, in minutes, to check reddit for new posts"""))
-
-conf.registerGlobalValue(SubredditAnnouncer, 'domain',
-    registry.String("http://www.reddit.com", """The domain to check. Probably http://www.reddit.com
-    unless you've got a different reddit install"""))
+conf.registerGlobalValue(Seattle911, 'checkinterval',
+    registry.NonNegativeInteger(1, """How often, in minutes, to check for new incidents"""))
     
-conf.registerGlobalValue(SubredditAnnouncer, 'redditname',
-    registry.String("Reddit", """The name of the reddit install. Not really a big deal. Leave blank
-    to not have the [reddit] part of the announce message"""))
-
-conf.registerGlobalValue(SubredditAnnouncer, 'shortdomain',
-    registry.String("http://redd.it", """The short domain to use. Probably http://redd.it unless you've
-    got your own reddit install. If you don't have a short domain just set it to your long domain"""))
-    
-#conf.registerGlobalValue(SubredditAnnouncer, 'subreddits',
-#    registry.SpaceSeparatedListOfStrings('', """A list of subreddits to announce in each channel.
-#    Format is #channel:subreddit+subreddit+subreddit #channel2:subreddit+subreddit"""))
-conf.registerGlobalValue(SubredditAnnouncer, 'configfile',
-    registry.String(conf.supybot.directories.data.dirize("subredditAnnouncer.ini"), """The configuration
-    file used for setting up the subreddit/channels"""))
+conf.registerGlobalValue(Seattle911, 'postformat',
+    registry.String("[911] [{incident_number}] {bold}{incident_type}{bold}", """How often, in minutes, to check for new incidents"""))

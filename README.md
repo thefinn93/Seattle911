@@ -1,6 +1,7 @@
 This plugin checks a list of subreddits for new posts and announces them in IRC as they come in.
 
-Install the plugin, then configure edit the config file ( `subredditAnnouncer.ini` in the data directory) in this format:
+Install the plugin, then configure edit the config file ( `Seattle911
+.ini` in the data directory) in this format:
 
 ```ini
 [#channel]
