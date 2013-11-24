@@ -45,4 +45,7 @@ conf.registerGlobalValue(Seattle911, 'checkinterval',
     registry.NonNegativeInteger(1, """How often, in minutes, to check for new incidents"""))
     
 conf.registerGlobalValue(Seattle911, 'postformat',
-    registry.String("[911] [{incident_number}] {bold}{incident_type}{bold}", """How often, in minutes, to check for new incidents"""))
+    registry.String("[911] [{incident_number}][{incident_type}] {address}", """How often, in minutes, to check for new incidents"""))
+
+conf.registerChannelValue(Seattle911, 'enabled',
+    registry.Boolean(False, """Determines whether the bot will announce 911 calls in this channel"""))

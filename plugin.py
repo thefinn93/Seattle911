@@ -80,7 +80,7 @@ class Seattle911(callbacks.Plugin):
             data = []
         request = requests.get("http://data.seattle.gov/resource/kzjm-xkqj.json").json()
         try:
-            messageformat = "[911] [{incident_number}] {bold}{incident_type}{bold}"
+            messageformat = "[911] [{incident_number}][{incident_type}] {address}"
             if self.registryValue('postformat'):
                 messageformat = self.registryValue('postformat')
             actuallyannounce = True
@@ -116,12 +116,12 @@ class Seattle911(callbacks.Plugin):
                             dgrey = "\00314",
                             lgrey = "\00315",
                             close = "\003")
-                        for channel in ["#scanner"]:
-                            if actuallyannounce:
+                        for channel in irc.state.channels:
+                            if self.registryValue('enabled', channel) and actuallyannounce:
                                 self.post(irc, channel, msg)
                             else:
                                 self.log.info("Not posting to %s: %s" % (channel, msg))
-                    data.append(incident['incident_number'])
+                        data.append(incident['incident_number'])
         except Exception as e:
             self.log.info(str(incident))
             self.log.info(str(messageformat))
