@@ -4,8 +4,7 @@ Install the plugin, then enable it in a channel by setting the channel configura
 `supybot.plugins.Seattle911.enable` to `on`.
 
 The "format" option dictates how the bot should announce messages to the
-channel. You can also specify a `[global]` section with a default format.
-Available options are:
+channel. Available options are:
  
 * `{address}` - The address that the incident occured at.
 
