@@ -79,7 +79,7 @@ class Seattle911(callbacks.Plugin):
         except Exception as inst:
             data = []
             
-        soup = BeautifulSoup(requests.get("http://www2.seattle.gov/fire/realtime911/getRecsForDatePub.asp?action=Today&incDate=&rad1=des").content)
+        soup = BeautifulSoup(requests.get("https://www2.ci.seattle.wa.us/fire/realtime911/getRecsForDatePub.asp?action=Today&incDate=&rad1=des").content)
         rows = soup.find_all("table")[3].find_all("tr")
         incidents = []
         for row in rows:
