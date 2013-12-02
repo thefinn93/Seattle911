@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2012, Finn Herzfeld
+# Copyright (c) 2014, Finn Herzfeld
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@ import supybot.conf as conf
 import requests
 import ConfigParser
 import json
+from bs4 import BeautifulSoup
 import re
 
 _ = PluginInternationalization('Seattle911')
@@ -64,7 +65,6 @@ class Seattle911(callbacks.Plugin):
         except AssertionError:
             schedule.removeEvent('911check')
             schedule.addPeriodicEvent(checkForPosts, self.registryValue('checkinterval')*60, '911check', False)
-    
     def post(self, irc, channel, msg):
         try:
             irc.queueMsg(ircmsgs.privmsg(channel, str(msg)))
@@ -74,62 +74,97 @@ class Seattle911(callbacks.Plugin):
             self.log.warning(str(e))
     
     def checkForIncidents(self, irc):
-        self.log.info("Checking for shit")
         try:
             data = json.load(open(self.savefile))
         except Exception as inst:
             data = []
-        request = requests.get("http://data.seattle.gov/resource/kzjm-xkqj.json").json()
-        try:
-            messageformat = "[911] [{incident_number}][{incident_type}] {address}"
-            if self.registryValue('postformat'):
-                messageformat = self.registryValue('postformat')
-            actuallyannounce = True
-            if len(data) == 0:
-                actuallyannounce = False
-            for incident in request:
-                if "incident_number" in incident:
-                    if not incident['incident_number'] in data:
-                        msg = messageformat.format(
-                            address = incident['address'],
-                            longitude = incident['longitude'],
-                            latitude = incident['latitude'],
-                            incident_number = incident['incident_number'],
-                            incident_type = incident['type'],
-                            #report_location_needs_recoding = incident['report_location']['needs_recoding'],
-                            #report_location_longitude = incident['report_location']['longitude'],
-                            #report_location_latitude = incident['report_location']['latitude'],
-                            bold = chr(002),
-                            underline = "\037",
-                            reverse = "\026",
-                            white = "\0030",
-                            black = "\0031",
-                            blue = "\0032",
-                            red = "\0034",
-                            dred = "\0035",
-                            purple = "\0036",
-                            dyellow = "\0037",
-                            yellow = "\0038",
-                            lgreen = "\0039",
-                            dgreen = "\00310",
-                            green = "\00311",
-                            lpurple = "\00313",
-                            dgrey = "\00314",
-                            lgrey = "\00315",
-                            close = "\003")
-                        for channel in irc.state.channels:
-                            if self.registryValue('enabled', channel) and actuallyannounce:
-                                self.post(irc, channel, msg)
-                            else:
-                                self.log.info("Not posting to %s: %s" % (channel, msg))
-                        data.append(incident['incident_number'])
-        except Exception as e:
-            self.log.info(str(incident))
-            self.log.info(str(messageformat))
-            self.log.warning("Whoops! Something fucked up! ")
-            self.log.warning(str(type(e)))
-            self.log.warning(str(e.args))
-            self.log.warning(str(e))
+            
+        soup = BeautifulSoup(requests.get("http://www2.seattle.gov/fire/realtime911/getRecsForDatePub.asp?action=Today&incDate=&rad1=des").content)
+        rows = soup.find_all("table")[3].find_all("tr")
+        incidents = []
+        for row in rows:
+            try:
+                tds = row.find_all("td")
+                a = {}
+                if len(tds[0].contents) > 0:
+                    a['date'] = tds[0].contents[0]
+                else:
+                    a['date'] = "Unknown"
+                    self.log.warning("Date missing!")
+                if len(tds[1].contents) > 0:
+                    a['number'] = tds[1].contents[0]
+                else:
+                    a['number'] = "Unknown"
+                    self.log.warning("Incident number missing!")
+                if len(tds[2].contents) > 0:
+                    a['level'] = tds[2].contents[0]
+                else:
+                    a['level'] = "Unknown"
+                    self.log.warning("Level missing for incident %s" % a['number'])
+                if len(tds[3].contents) > 0:
+                    a['units'] = tds[3].contents[0]
+                else:
+                    a['units'] = "Unknown"
+                    self.log.warning("Units missing for incident %s" % a['number'])
+                if len(tds[4].contents) > 0:
+                    a['location'] = tds[4].contents[0]
+                else:
+                    a['location'] = "Unknown"
+                    self.log.warning("Location missing for incident %s" % a['number'])
+                if len(tds[5].contents) > 0:
+                    a['type'] = tds[5].contents[0]
+                else:
+                    a['type'] = "Unknown"
+                    self.log.warning("Type missing for incident %s" % a['number'])
+                incidents.append(a)
+            except IndexError:
+                self.log.info(row.prettify())
+            
+        messageformat = "[911] [{number}][{type}] {location}"
+        if self.registryValue('postformat'):
+            messageformat = self.registryValue('postformat')
+        actuallyannounce = True
+        if len(data) == 0:
+            actuallyannounce = False
+        for incident in incidents:
+            #self.log.info(incident)
+            if not incident['number'] in data:
+                msg = messageformat.format(
+                    date = incident['date'],
+                    number = incident['number'],
+                    level = incident['level'],
+                    units = incident['units'],
+                    location = incident['location'],
+                    type = incident['type'],
+                    bold = chr(002),
+                    underline = "\037",
+                    reverse = "\026",
+                    white = "\0030",
+                    black = "\0031",
+                    blue = "\0032",
+                    red = "\0034",
+                    dred = "\0035",
+                    purple = "\0036",
+                    dyellow = "\0037",
+                    yellow = "\0038",
+                    lgreen = "\0039",
+                    dgreen = "\00310",
+                    green = "\00311",
+                    lpurple = "\00313",
+                    dgrey = "\00314",
+                    lgrey = "\00315",
+                    close = "\003")
+                for channel in irc.state.channels:
+                    if self.registryValue('enabled', channel) and actuallyannounce:
+                        self.post(irc, channel, msg)
+                    else:
+                        self.log.info("Not posting to %s: %s" % (channel, msg))
+                data.append(incident['number'])
+        #except Exception as e:
+        #    self.log.warning("Whoops! Something fucked up! ")
+        #    self.log.warning(str(type(e)))
+        #    self.log.warning(str(e.args))
+        #    self.log.warning(str(e))
         savefile = open(self.savefile, "w")
         savefile.write(json.dumps(data))
         savefile.close()
