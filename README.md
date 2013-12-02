@@ -6,15 +6,18 @@ Install the plugin, then enable it in a channel by setting the channel configura
 The "format" option dictates how the bot should announce messages to the
 channel. Available options are:
  
-* `{address}` - The address that the incident occured at.
+* `{date}` - The date and time that it was called in. Format is `12/2/2013 12:14:24 AM`
 
-* `{longitude}` - The longitude that the incident occured at.
+* `{number}` - The incident number.
 
-* `{latitude}` - The latitude that the incident occured at.
+* `{level}` - The incident's level
 
-* `{incident_number}` - A unique identifier assigned to the incident.
+* `{units}` - Number of units dispatched
 
-* `{incident_type}` - the type of incident. For example, "Aid Response", "Medic Response", "Auto Fire Alarm"
+* `{type}` - the type of incident. For example, "Aid Response", "Medic Response", "Auto Fire Alarm"
+
+* `{location}` - the location of the incident.
+
 
 * `{bold}` - the code to start or stop bold formatting
 
